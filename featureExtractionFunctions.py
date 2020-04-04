@@ -263,3 +263,59 @@ def feature_extraction_Step(all_s,all_id,all_label):
                 feats = feature_extraction(seg_i,fs,feats,config.lp_ord,ID,label)
                 
     return feats
+
+def processingNaNvalues(feats):
+
+    #TODO: decide best way to deal with this. Do interpolation, or do dropping rows?
+    #1.Check which columns have NaNs values
+
+    #feats2 = feats.copy()
+
+    #sum(feats.isna().any())
+    #feats.columns[feats.isna().any()].tolist() --> We get just the ones we have inserted in formants
+    #feats2 = feats.interpolate(method ='cubic')
+    feats2 = feats.dropna(axis=1).copy()
+    #feats2.dropna(axis=0, how="any", thresh=None, subset=None, inplace=True)
+
+    #feats2.columns[feats2.isna().any()].tolist()
+    #feats2.describe()
+    #sum(feats2.isna().any())
+    return feats2
+
+#Make dictionary and add label column using it
+def createLabelDict_addLabel2df(feats):
+    feats_unique = feats.drop_duplicates(subset=['Id'])
+    label_dict = dict(zip(feats_unique.Id, feats_unique.label))
+    return label_dict
+
+
+def frame_mean_std_chunk_modeling (feats2, label_dict):
+
+    #Grouping the frames from a same recording (Id) into chunks with the same number of frames.
+    #The training of the classifier will be based on these chunks mean and standard deviation.
+
+    feats2['cum_IDidx'] = feats2.groupby('Id').cumcount()
+
+    def get_subidx(cum_Idx,batch_size):
+        #batch needs to be an integer (or float like 3.0)
+        return int(1.0*cum_Idx/batch_size)
+
+    feats2['subIdx'] = feats2.apply(lambda x: get_subidx(x['cum_IDidx'], 10), axis=1)
+    feats2 = feats2.drop(['cum_IDidx'],axis=1)
+
+    mean_feats = feats2.groupby(['Id','subIdx']).aggregate('mean').reset_index()
+    std_feats = feats2.groupby(['Id','subIdx']).agg(lambda x: x.std(ddof=0)).reset_index() #ddof=0 to compute population std (rather than sample std)
+    keep_same = {'Id', 'subIdx'}
+    mean_feats.columns = ['{}{}'.format(c, '' if c in keep_same else '_m') for c in mean_feats.columns]
+    std_feats.columns = ['{}{}'.format(c, '' if c in keep_same else '_std') for c in std_feats.columns]
+
+    mean_std_feats = pd.merge(mean_feats, std_feats, on=['Id','subIdx'], how='outer')
+
+    mean_std_feats['label'] = mean_std_feats["Id"].map(label_dict)
+    #mean_std_feats[['Id','label']].head(50)
+
+    return mean_std_feats
+
+
+#TODO: modeling of chunks using sequence models too
+
