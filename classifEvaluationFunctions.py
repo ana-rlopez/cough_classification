@@ -18,7 +18,7 @@ def evaluation_Step(mean_pred_probs):
     recall = scores[3]
     
     print('Scores:')
-    #print('Accuracy: %f' % acc)
+    print('Accuracy: %f' % acc)
     print('Precision: %f' % prec)
     print('F1-score: %f' % f1)
     print('Recall: %f' % recall)
