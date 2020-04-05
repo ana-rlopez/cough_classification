@@ -32,7 +32,9 @@ def calculate_heart_rate(signal, frames_per_second=30):
     W = fftfreq(y.size, d=x[1] - x[0])
 
     cut_f_signal = f_signal.copy()
-    cut_f_signal[(W < 0.7)] = 0  # filter all frequencies above 0.6
+    # Filter frequences below 42 bpm
+    cut_f_signal[(W < 0.7)] = 0
+    # Filter frequences above 240 bpm
     cut_f_signal[(W > 4.0)] = 0
 
     cut_signal = irfft(cut_f_signal)
