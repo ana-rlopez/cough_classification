@@ -1,0 +1,4 @@
+git+git://github.com/brycedrennan/eulerian-magnification.git
+numpy
+opencv-python
+scikit-video
