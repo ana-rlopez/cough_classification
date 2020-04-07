@@ -1,10 +1,2 @@
-# Ignore everything
-*
-
-# But not these files...
-!.gitignore
-!*.csv
-!*.ipynb
-!*.py
-
-
+*.idea/*
+venv/*
