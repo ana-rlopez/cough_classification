@@ -1,6 +1,9 @@
 import pandas as pd
+import random
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import SGDClassifier
+
+random.seed(1)
 
 
 def modelTraining(X_train,y_train,ID_train):
@@ -28,7 +31,7 @@ def modelTraining(X_train,y_train,ID_train):
 
         #TODO: optimize the penaly weight
         #https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegressionCV.html
-        logReg = SGDClassifier(loss='log', penalty='elasticnet')
+        logReg = SGDClassifier(loss='log', penalty='elasticnet',random_state = 1)
         logReg.fit(X_trainNorm1, y_train1)
         y_hat_prob = logReg.predict_proba(X_valNorm1)
         classes =logReg.classes_
@@ -37,18 +40,18 @@ def modelTraining(X_train,y_train,ID_train):
 
     return pred_probs
 
-def predict_class(prob_dry,prob_wet):
-    if prob_dry > prob_wet :
-        return 'Dry'
+def predict_class(prob_covid,prob_healthy):
+    if prob_covid > prob_healthy :
+        return 'covid'
     else:
-        return 'Wet'
+        return 'healthy'
 
 #get probability per recording
 def get_predClass_per_audio(pred_probs, label_dict):
 
     mean_pred_probs = pred_probs.groupby('ID').aggregate('mean').reset_index()
 
-    mean_pred_probs['pred_class'] = mean_pred_probs.apply(lambda x: predict_class(x['Dry'], x['Wet']), axis=1)
+    mean_pred_probs['pred_class'] = mean_pred_probs.apply(lambda x: predict_class(x['covid'], x['healthy']), axis=1)
 
     #add actual classes
     mean_pred_probs['label'] = mean_pred_probs["ID"].map(label_dict)
