@@ -29,8 +29,7 @@ eps = sys.float_info.epsilon
 
 #framing
 
-#frame_len_s=0.025 #12 segments seemed adequeate in paper, since segments are no longer than 400ms (400ms/12=33.3ms)
-frame_len_s = 0.010
+frame_len_s=0.010 #12 segments seemed adequeate in paper, since segments are no longer than 400ms (400ms/12=33.3ms)
 frame_step_s=frame_len_s #according to paper: non-overlapping frames
 
 frame_len = int(round(frame_len_s*fs_targ)) #in samples
