@@ -9,6 +9,7 @@ from pydub import AudioSegment
 from pydub.silence import split_on_silence
 from pydub.utils import mediainfo
 from pydub.playback import play
+import pysptk
 import math
 
 #compute RMS value of a signal and return it (in dB scale)
@@ -168,8 +169,20 @@ def feature_extraction(x,fs,feats_df,lp_ord,ID,label):
     
     #TODO: compute also F0 with pysptk (a python wrapper for SPTK library), it probably gives better results
     #https://github.com/r9y9/pysptk/blob/master
-    #F0_feat = pysptk.rapt(x.astype(np.float32), fs=fs, hopsize=frame_step, min=50, max=500, ,voice_bias=0.0 ,otype=\"f0\")
+        	#F0_feat = pysptk.rapt(x.astype(np.float32), fs=fs, hopsize=frame_step, min=50, max=500, ,voice_bias=0.0 ,otype=\"f0\")
+    
+    #Compare the values between swipe and rapt 
+    #F0_feat = pysptk.swipe(x.astype(np.float64), fs=fs,hopsize = config.frame_step, min=50, max=500, otype="f0")
+    
+    F0_feat = pysptk.rapt(x.astype(np.float32), fs=fs,hopsize = config.frame_step, min=50, max=500, otype="f0")
+
+    
+    
     #right frame size???
+#Change the window size from 450 to 40 to 100
+# Keep swipe , change min to 50 and max - 500
+#EXample pysptk.swipe(x.astype(np.float64), fs=fs, hopsize=80, min=60, max=200, otype="f0")
+
     
     #6)Kurtosis
     kurt_feat =  np.apply_along_axis(kurtosis, 1, x_frames)
@@ -273,8 +286,14 @@ def processingNaNvalues(feats):
 
     #sum(feats.isna().any())
     #feats.columns[feats.isna().any()].tolist() --> We get just the ones we have inserted in formants
-    #feats2 = feats.interpolate(method ='cubic')
-    feats2 = feats.dropna(axis=1).copy()
+    feats2 = feats.interpolate(method ='pad')
+    
+    
+    
+    #commenting the line below at the moment that drops the rows with NAN values
+    #feats2 = feats.dropna(axis=1).copy()
+    
+    
     #feats2.dropna(axis=0, how="any", thresh=None, subset=None, inplace=True)
 
     #feats2.columns[feats2.isna().any()].tolist()
@@ -318,4 +337,7 @@ def frame_mean_std_chunk_modeling (feats2, label_dict):
 
 
 #TODO: modeling of chunks using sequence models too
+
+
+
 
