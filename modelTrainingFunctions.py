@@ -1,12 +1,11 @@
 import pandas as pd
 import random
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import SGDClassifier
 
 random.seed(1)
 
 
-def modelTraining(X_train,y_train,ID_train):
+def modelTraining(cls,X_train,y_train,ID_train):
 
     ID_list = ID_train.drop_duplicates().tolist()
     pred_probs = pd.DataFrame([])
@@ -31,10 +30,10 @@ def modelTraining(X_train,y_train,ID_train):
 
         #TODO: optimize the penaly weight
         #https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegressionCV.html
-        logReg = SGDClassifier(loss='log', penalty='elasticnet',random_state = 1)
-        logReg.fit(X_trainNorm1, y_train1)
-        y_hat_prob = logReg.predict_proba(X_valNorm1)
-        classes =logReg.classes_
+        
+        cls.fit(X_trainNorm1, y_train1)
+        y_hat_prob = cls.predict_proba(X_valNorm1)
+        classes = cls.classes_
         pred_probs = pred_probs.append(pd.DataFrame({'ID': ID_train[val_index], str(classes[0]): y_hat_prob[:,0],
                                                      str(classes[1]): y_hat_prob[:,1]}),ignore_index=True, sort=False)    
 
@@ -56,3 +55,4 @@ def get_predClass_per_audio(pred_probs, label_dict):
     #add actual classes
     mean_pred_probs['label'] = mean_pred_probs["ID"].map(label_dict)
     return mean_pred_probs
+B
