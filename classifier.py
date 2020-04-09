@@ -2,12 +2,18 @@ import numpy as np
 import GPy
 import pandas as pd
 
+# based on the current evaluation loop, classifiers are assumed to have functions and fit and predict_proba as illustrated in this base class
+
+# todo: include explanations about input and outpout variables formats so that someone who wants to make a classifier knows what is expected
+
+# note that inputs to fit are a bit weird: xtrain is np array and ytrain is pandas. i think it would be better to convert ytrain to np array ints outside the classifier and not assume that classifiers have classes_ variable at all. for now i put the conversion in a separate function
+
 class Classifier():
 
     def __init__(self):
         raise NotImplementedError
           
-    def fit(self, xtrain, ytrain):    
+    def fit(self, xtrain, ytrain):
         raise NotImplementedError
 
     def predict_proba(self, xtest):
@@ -18,6 +24,8 @@ class Classifier():
         self.classes_=names      
         return classids
 
+# here is an example (note that the current logreg classifier can be used as is)
+    
 class GP_mini(Classifier):
     
     def __init__(self, kernel=None):
