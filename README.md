@@ -3,6 +3,10 @@
 The current classifier was originally based on the features and model employed in a set of research articles and PhD thesis. [1,2,3]. However, later on through our experiments the model and features diverged from the original concept.
 ## Usage
 Our latest experiment can be seen by running the Jupyter notebook 'cough_classification.ipynb'.
+
+## Data 
+The data set consisted of 36 audio wav files of cough sounds, that we scrapped from Youtube videos. Each recording was manually edited to include only 3 consecutive coughs (since in future experiments we expect to use only cough recordings in this format). In addition, a doctor annotated the recordings with the labels wet/dry.
+
 ## Pre-processing
 Prior to extracting features, the signal was: 1) downsampled to 16kHz, 2) the level of the signal was normalized (for futures features that may be affected on level, such as wavelets), 3) segmented in cough segments, by removing the silences in the signal 4) high filtered (pre-emphasis filter).
 The cough segments were then divided in non-overlapping Hamming-windowed frames of 25ms.
