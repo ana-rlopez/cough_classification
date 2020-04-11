@@ -2,7 +2,10 @@
 
 The current classifier was originally based on the features and model employed in a set of research articles and PhD thesis. [1,2,3]. However, later on through our experiments the model and features diverged from the original concept.
 ## Usage
-Our latest experiment can be seen by running the Jupyter notebook 'cough_classification.ipynb'.
+
+* The original experiment can be found in branch 'original_experiment'.
+* A second experiment can be found in branch 'cough_classification_deepa', based on a feed-forward neural network.
+* A third experiment can be found in branch '', based on a GRU sequeantial model.
 
 ## Data 
 The data set consisted of 36 audio wav files of cough sounds, that we scrapped from Youtube videos. Each recording was manually edited to include only 3 consecutive coughs (since in future experiments we expect to use only cough recordings in this format). In addition, a doctor annotated the recordings with the labels wet/dry.
@@ -32,21 +35,25 @@ However, we later on have implemented:
 b) A feed-forward neural network. --> For this model only the MFCC features were employed.
 
 c) a GRU model (sequential model)
+
 We must note also that prior to training the model, the training set of observations was normalized by fitting a scaler function. The same fit scaler function was applied to the validation set prior to using for predicting it.
 
 ## Evaluation
 The evaluation of the classifier was performed using cross-validation (specifically, using one-leave-out method). While we have in this case 1 observation
 In this case, we leave out 1 of the recordings as validation set, and the rest as training.
 
+The measure for evaluating the classification performance was accuracy.
+
 ## Results
 
+The accuracy results were obtained from averaging 20 rounds of: fitting the model to training data + predicting on validation data.
+
 ---
-| Item      |    Classifier    | Accuracy |     Output  |
+| Item      |    Classifier    | Accuracy (Avg) |     Output  |
 | ------------- |:-------------:| -----:| --------:|
-| 1       |     Logistic regression Classifier       | 75%| Dry VS Wet Cough 
+| 1       |     Logistic regression Classifier       | 66.3%| Dry VS Wet Cough 
 
-b) Feed-forward network
-
+b) Feed-forward network 
 
 c) GRU
 
