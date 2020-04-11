@@ -46,10 +46,10 @@ def predict_class(prob_dry,prob_wet):
 #get probability per recording
 def get_predClass_per_audio(pred_probs, label_dict):
 
-    mean_pred_probs = pred_probs.groupby('ID').aggregate('mean').reset_index()
+    pred_probs_perID = pred_probs.groupby('ID').aggregate('mean').reset_index()
 
-    mean_pred_probs['pred_class'] = mean_pred_probs.apply(lambda x: predict_class(x['Dry'], x['Wet']), axis=1)
+    pred_probs_perID['pred_class'] = pred_probs_perID.apply(lambda x: predict_class(x['Dry'], x['Wet']), axis=1)
 
     #add actual classes
-    mean_pred_probs['label'] = mean_pred_probs["ID"].map(label_dict)
-    return mean_pred_probs
+    pred_probs_perID['label'] = pred_probs_perID["ID"].map(label_dict)
+    return pred_probs_perID
