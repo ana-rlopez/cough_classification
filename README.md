@@ -4,9 +4,9 @@ The current classifier was based on the features and model employed in a set of 
 
 ## Usage
 
-* The original experiment can be found in default branch, 'original_experiment'.
-* Other experiments were done by other collaborators of this repository, which involved using a different model for classification, are included in the other branches. These experiments are, though, evaluated in other manner as the original experiment, or they are not yet completed.
-* Also, research on visual diagnostics using computer vision methods was done by other collaborator, and can be found in folder 'visual diagnostics', in 'master' branch.
+* The original experiment can be found in the default branch, 'original_experiment'.
+* Other experiments were done by other collaborators of this repository, which involved using a different model for classification, and are included in the other branches of this repository. These experiments are, though, evaluated in other manner as the original experiment, or they are not yet completed.
+* Also, preliminary research on visual diagnostics using computer vision methods was done by other collaborator, and can be found in folder 'visual diagnostics', in 'master' branch.
 
 ## Data 
 The data set consisted of 36 audio wav files of cough sounds, that were scrapped from Youtube videos. Each recording was manually edited to include only 3 consecutive coughs (since in future experiments we expect to use only cough recordings in this format). In addition, a doctor annotated the recordings with the labels wet/dry.
