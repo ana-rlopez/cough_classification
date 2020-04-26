@@ -8,6 +8,8 @@ Most of the features included in this module (and their settings) are based on t
 """
 
 import math
+import configparser
+import sys
 import pandas as pd
 import numpy as np
 from scipy.stats import kurtosis, skew
@@ -20,8 +22,6 @@ from pydub import AudioSegment
 from pydub.silence import split_on_silence
 from pydub.utils import mediainfo
 from pydub.playback import play
-
-import config
 
 #TODO: re-check! seems not to work?
 def get_RMS(s):
@@ -131,7 +131,7 @@ def get_logEnergy(x):
     Returns:
         logEnergy (float): log-energy of the signal.
     """
-    logEnergy = np.log10( ( (np.power(x,2)).sum()/len(x) ) + config.eps)  
+    logEnergy = np.log10( ( (np.power(x,2)).sum()/len(x) ) + sys.float_info.epsilon)  
     return logEnergy
 
 def get_F0(x,fs):
@@ -158,7 +158,7 @@ def get_F0(x,fs):
     return F0
 
 #Estimate formants
-def get_formants(x, lp_order, nr_formants):
+def get_formants(x, lp_order, nr_formants,fs):
     """
     Estimate formants of the input signal using Levinson-Durbin method.
     
@@ -166,6 +166,7 @@ def get_formants(x, lp_order, nr_formants):
         x (numpy array): input signal.
         lp_order (int): order of LPC used in the estimation.
         nr_formants (int): number of formants to return (starting from first one).
+        fs (float): sampling frequency of x.
         
     Returns:
         first_formants (list): first estimated nr_formants formants.
@@ -181,7 +182,7 @@ def get_formants(x, lp_order, nr_formants):
     angz = np.arctan2(np.imag(rts), np.real(rts))
 
     #get formant frequencies
-    formants = sorted(angz * (fs_targ / (2 * math.pi)))
+    formants = sorted(angz * (fs / (2 * math.pi)))
     
     first_formants = formants[0:nr_formants]
     return first_formants
@@ -216,28 +217,36 @@ def get_entropy(x, type='shannon'):
 
     # compute entropy
     for i in probs:
-        entropy_x -= i * math.log(i+config.eps, base[type])
+        entropy_x -= i * math.log(i+sys.float_info.epsilon, base[type])
     
     return entropy_x
 
-def feature_extraction(x,fs,feats_df,lp_ord,ID,label):
+def feature_extraction(x,feats_df,ID,label,config):
     """
     Extract features from signal x (identified as ID), and concatenate them to dataframe feats_df.
     
     Args:
-        x (numpy array): input signal.
-        fs (int): sampling frequency of x.
+        x (numpy array): input signal.       
         feats_df (dataframe): dataframe to store features.
-        lp_ord (int): order of LPC, used for formant estimation.
         ID (string): identification of x.
         label (string): class 'Dry' or 'Wet', as which x has been labeled.
+        config (ConfigParser): configuration file
      
      Returns:
         feats_df (dataframe): dataframe to store features, and to which has been appended the features of input x.
     """
     #segment x in frames (to compute features in a frame-basis)
-    x_frames = python_speech_features.sigproc.framesig(x,config.frame_len,config.frame_step,config.win_func)
-
+    
+    
+    fs = config.getint('preprocess','fs_targ')
+    if config.get('featExtraction','win_type') == 'hamming':
+        win_func= np.hamming
+    frame_len_s = config.getfloat('featExtraction','frame_len_s')
+    frame_len = int(round(frame_len_s*fs)) #frame length in samples
+    frame_step_s = config.getfloat('featExtraction','frame_step_s')
+    frame_step = int(round(frame_step_s*fs)) #frame step in samples    
+    
+    x_frames = python_speech_features.sigproc.framesig(x,frame_len,frame_step,win_func)
     nr_frames = x_frames.shape[0]
     #print(nr_frames)
         
@@ -245,7 +254,7 @@ def feature_extraction(x,fs,feats_df,lp_ord,ID,label):
     
     #DOUBT: if log-energy feature is included, should I also include the first mfcc coefficient (c0) ?
     #1)mfcc
-    mfcc_feat = python_speech_features.mfcc(x,fs, winlen=config.frame_len_s,winstep=config.frame_step_s, numcep=config.cep_num,winfunc=config.win_func)
+    mfcc_feat = python_speech_features.mfcc(x,fs, winlen=frame_len_s,winstep=frame_step_s, numcep=config.getint('featExtraction','cep_num'),winfunc=win_func)
     
     #deltas to capture time-varying aspect of signal
     mfcc_delta_feat = python_speech_features.delta(mfcc_feat,1) #mfcc_delta_feat = np.subtract(mfcc_feat[:-1], mfcc_feat[1:]) #same
@@ -263,7 +272,7 @@ def feature_extraction(x,fs,feats_df,lp_ord,ID,label):
     
     for i_frame in range(0,nr_frames):
         try: 
-            formants_feat[i_frame] = get_formants(x_frames[i_frame], config.lp_ord, config.nr_formants)
+            formants_feat[i_frame] = get_formants(x_frames[i_frame], config.getint('featExtraction','lp_ord'), config.getint('featExtraction','nr_formants'),fs)
         except:
             pass
     
@@ -294,10 +303,10 @@ def feature_extraction(x,fs,feats_df,lp_ord,ID,label):
     entropy_feat = np.apply_along_axis(get_entropy, 1, x_frames)
     
     
-    mfcc_cols = ['mfcc_%s' % s for s in range(0,config.cep_num)]
-    mfcc_delta_cols = ['mfcc_d%s' % s for s in range(0,config.cep_num)]
-    mfcc_deltadelta_cols = ['mfcc_dd%s' % s for s in range(0,config.cep_num)]
-    formants_cols = ['F%s' % s for s in range(1,config.nr_formants+1)]
+    mfcc_cols = ['mfcc_%s' % s for s in range(0,config.getint('featExtraction','cep_num'))]
+    mfcc_delta_cols = ['mfcc_d%s' % s for s in range(0,config.getint('featExtraction','cep_num'))]
+    mfcc_deltadelta_cols = ['mfcc_dd%s' % s for s in range(0,config.getint('featExtraction','cep_num'))]
+    formants_cols = ['F%s' % s for s in range(1,config.getint('featExtraction','nr_formants')+1)]
           
     feats_segment = pd.concat([pd.DataFrame({'Id': ID, 'kurt': kurt_feat, 'logEnergy': logEnergy_feat,
                                                  'zcr': zcr_feat, 'F0': F0_feat,
@@ -310,13 +319,14 @@ def feature_extraction(x,fs,feats_df,lp_ord,ID,label):
     
     return feats_df
 
-def feature_extraction_Step(all_s,all_id,all_label):
+def feature_extraction_Step(all_s,all_id,all_label,config):
     """
     Extract features for all signals included in all_s
     Args:
         all_s (list of numpy arrays): list of signals from which features are extracted.
         all_id (list of strings): corresponding list of IDs for signals in all_s.
         all_label (list of strings): corresponding list of labels ('Dry' or 'Wet') for signals in all_s.
+        config (ConfigParser): configuration file
           
      Returns:
         feats_df (dataframe): dataframe that store features of all signals in all_s.
@@ -329,12 +339,11 @@ def feature_extraction_Step(all_s,all_id,all_label):
             #Pre-processing of the signals:
 
             ## 0 ) Resampling to target sampling frequency:
-            s = s.set_frame_rate(config.fs_targ)
-            fs= config.fs_targ
-
+            s = s.set_frame_rate(config.getint('preprocess','fs_targ'))
+            
             ## 1) Match amplitude to target level
-            if config.norm_skip is False:
-                s=match_target_amplitude(s, config.dB_targ)
+            if config.getboolean('preprocess', 'norm_skip') is False:
+                s=match_target_amplitude(s, config.getfloat('preprocess','dB_targ'))
                 #print(s.rms)
 
             ## 2) Segmentation of cough streams (silence-based)
@@ -354,7 +363,7 @@ def feature_extraction_Step(all_s,all_id,all_label):
             s_segments_np = list(map(AudioSegment2numpy_arr, s_segments))
 
             ## 4) Pre-emphasis filtering on each segment
-            if config.HPF_skip is False:
+            if config.getboolean('preprocess','HPF_skip') is False:
                 print('High-pass filtering...')       
                 preEmph_filtering = lambda x: apply_preEmph(x)
                 s_segments_filt = list(map(preEmph_filtering, s_segments_np))
@@ -365,7 +374,7 @@ def feature_extraction_Step(all_s,all_id,all_label):
             print('Computing features...')
             for idx, seg_i in enumerate(s_segments_filt):
                 #print('\tSegment %d' % idx)
-                feats_df = feature_extraction(seg_i,fs,feats_df,config.lp_ord,ID,label)
+                feats_df = feature_extraction(seg_i,feats_df,ID,label,config)
                 
     return feats_df
 

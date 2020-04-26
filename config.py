@@ -24,9 +24,6 @@ featExtr_skip = False #skip wavs reading + feature extraction steps (if feats pi
 #initialize data frame of features:
 feats = pd.DataFrame([])
 
-#tiny constant value
-eps = sys.float_info.epsilon
-
 #framing
 
 frame_len_s=0.025 #12 segments seemed adequeate in paper, since segments are no longer than 400ms (400ms/12=33.3ms)
