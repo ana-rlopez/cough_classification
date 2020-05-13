@@ -1,13 +1,15 @@
-# Ignore everything
-*
+__pycache__/
+venv/*
 
-# But not these files...
-!.gitignore
-!*.csv
-!*.ipynb
-!*.py
-!*.md
-!*.txt
-!*.ini
+#data folder
+data/*
+
+#pickle files
+*.pkl
+
+# Jupyter notebook
+.ipynb_checkpoints
+
+
 
 
