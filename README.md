@@ -25,14 +25,25 @@ After these commands are run, the container runs in the terminal and shows a pag
 ## Usage
 
 * The original experiment can be found in the default branch, 'original_experiment'.
-The experiment can be run via the Jupyter notebook **cough_classification.ipynb**
-<br>! Note that the installation instructions provided cover only the usage of this branch.
+The experiment can be run via the Jupyter notebook **cough_classification.ipynb**. 
+<br > Please note that this repository is meant to be used with the user's own data. No data is provided in this repository.
+<br> Also, the installation instructions provided cover only the usage of this branch.
 
 * Other experiments were done by other collaborators of this repository, which involved using a different model for classification, and are included in the other branches of this repository. These experiments are, though, evaluated in other manner as the original experiment, or they are not yet completed.
-* Also, preliminary research on visual diagnostics using computer vision methods was done by another collaborator, and can be found in folder 'visual diagnostics', in 'master' branch.
+* Also, preliminary research on visual diagnostics using computer vision methods was done by another collaborator, and can be found in folder 'visual diagnostics', in 'master' branch
 
-## Data 
-The data set consisted of 36 audio wav files of cough sounds, that were scrapped from Youtube videos. Each recording was manually edited to include only 3 consecutive coughs (since in future experiments we expect to use only cough recordings in this format). In addition, a doctor annotated the recordings with the labels wet/dry.
+### Data format
+
+The data folder path can be modified in config.py. Wav recordings are expected in the data folder, with the format:
+- The filename string (without the .wav extension) consists of substrings delimited by dashes (that is '-' ).
+- The last substring of the filename must be the label of the recording. Thus, this substring must be 'Dry' or 'Wet'.
+- The second-to-last substring of the filename is the ID of the recording.
+
+Example of filename string following this format:
+```bash
+'Morning_cough-RFDRFs205-Wet'
+```
+For this example the ID is 'RFDRFs205' and label is 'Wet'.
 
 ## Pre-processing
 Prior to extracting features, the signal was: 1) downsampled to 16kHz, 2) the level of the signal was normalized (for futures features that may be affected on level, such as wavelets), 3) segmented in cough segments, by removing the silences in the signal 4) high filtered (pre-emphasis filter).
@@ -58,15 +69,28 @@ Prior to training the model, the training set of observations was normalized by 
 ## Evaluation
 The evaluation of the classifier was performed using cross-validation (specifically, using one-leave-out method). In this case, all the chunk observations belonging to 1 recording are used as validation set, and the rest are used as training.
 
-The measure for evaluating the classification performance was accuracy.
+### Metrics 
+The metrics obtained tor evaluate the classification performance were:
+* Accuracy
+* Recall   
+* F1
+* Precision
+
+
+### Data 
+
+This experiment was evaluated with the following data:
+The data set consisted of 36 audio wav files of cough sounds, that were scrapped from Youtube videos. The list of videos came from the free supplementary materials provided for the following research article: 'Continuous Sound Collection Using Smartphones and Machine Learning to Measure Cough' (Kvapilova et al., 2019) [4].
+
+For this experiment, each recording was manually edited to include only 3 consecutive coughs (since in future experiments we expect to use only cough recordings in this format). In addition, a doctor annotated the recordings with the labels 'wet'/'dry'.
 
 ## Results
 The accuracy results were obtained from averaging 20 rounds of: fitting the model to training data + predicting on validation data.
 
 ---
-| Item      |    Classifier    | Accuracy (Avg) |     Output  |
-| ------------- |:-------------:| -----:| --------:|
-| 1       |     Logistic regression Classifier       | 66.3%| Dry VS Wet Cough 
+| Item      |    Classifier    | Accuracy (Avg) | Recall (Avg) | F1 (Avg) | Precision (Avg) |
+| ------------- |:-------------:| -----:| -----:| -----:| -----:| --------:|
+| 1       |     Logistic regression Classifier       | 64.58%| 62.93%| 62.98%| 63.43%|
 
 
 ## Settings
@@ -83,3 +107,5 @@ The settings of the features extracted can be found in the script 'config.py'
 [2] Kosasih, Keegan, et al. "Wavelet augmented cough analysis for rapid childhood pneumonia diagnosis." IEEE Transactions on Biomedical Engineering 62.4 (2014): 1185-1194.
 
 [3] Amrulloh, Yusuf Aziz. "Automated methods for cough assessments and applications in screening paediatric respiratory diseases." (2014).
+
+[4] Kvapilova L, Boza V, Dubec P, Majernik M, Bogar J, Jamison J, Goldsack J, C, Kimmel D, J, Karlin D, R: Continuous Sound Collection Using Smartphones and Machine Learning to Measure Cough. Digit Biomark 2019;3:166-175. doi: 10.1159/000504666
