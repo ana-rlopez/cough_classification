@@ -87,10 +87,9 @@ For this experiment, each recording was manually edited to include only 3 consec
 ## Results
 The accuracy results were obtained from averaging 20 rounds of: fitting the model to training data + predicting on validation data.
 
----
-| Item      |    Classifier    | Accuracy (Avg) | Recall (Avg) | F1 (Avg) | Precision (Avg) |
-| ------------- |:-------------:| -----:| -----:| -----:| -----:| --------:|
-| 1       |     Logistic regression Classifier       | 64.58%| 62.93%| 62.98%| 63.43%|
+| Item 	| Classifier          	| Accuracy (Avg) 	| Recall (Avg) 	| F1 (Avg) 	| Precision (Avg) 	|
+|------	|---------------------	|:--------------:	|:------------:	|:--------:	|:---------------:	|
+| 1    	| Logistic regression 	|      0.646     	|     0.629    	|   0.630  	|      0.634      	|
 
 
 ## Settings
